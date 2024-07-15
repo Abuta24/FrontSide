@@ -38,7 +38,7 @@ const HomePage = () => {
       fetchInvoices(token);
       getUsers(token);
     }
-  }, []);
+  }, [router]);
 
   const getUsers = async (token: string | null) => {
     try {
