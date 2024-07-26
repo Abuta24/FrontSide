@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import axios, { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
 
@@ -8,9 +8,10 @@ interface Invoice {
   description: string;
   amount: number;
   price: number;
+  userId: string;
 }
 
-interface Users {
+interface User {
   _id: string;
   email: string;
   password: string;
@@ -28,6 +29,7 @@ const HomePage = () => {
   const [editingEmail, setEditingEmail] = useState(false);
   const [show, setShow] = useState(false);
   const [newEmail, setNewEmail] = useState<string>("");
+  const [filterPrice, setFilterPrice] = useState<number>(0);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -35,36 +37,45 @@ const HomePage = () => {
     if (!token) {
       router.push("/sign-in");
     } else {
-      fetchInvoices(token);
-      getUsers(token);
+      fetchUserData(token);
     }
   }, [router]);
 
-  const getUsers = async (token: string | null) => {
+  const fetchUserData = async (token: string | null) => {
     try {
       const response = await axios.get(
-        "https://backside-71fi.onrender.com/user/currentuser",
+        "http://localhost:1337/user/currentuser",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       setUserId(response.data._id);
+      fetchInvoices(token, response.data._id);
     } catch (error) {
-      console.error("Failed to fetch users", error);
+      console.error("Failed to fetch user data", error);
     }
   };
 
-  const fetchInvoices = async (token: string | null) => {
+  const fetchInvoices = async (token: string | null, userId: string) => {
     try {
-      const response: AxiosResponse<Invoice[]> = await axios.get(
-        "https://backside-71fi.onrender.com/invoices",
+      const response: AxiosResponse<{ invoices: Invoice[] }> = await axios.get(
+        `http://localhost:1337/user/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setInvoices(response.data);
+
+      const { invoices } = response.data;
+
+      if (Array.isArray(invoices)) {
+        setInvoices(invoices);
+      } else {
+        setInvoices([]);
+        console.error("Unexpected response format: ", response.data);
+      }
     } catch (error) {
       console.error("Failed to fetch invoices", error);
+      setInvoices([]);
     }
   };
 
@@ -78,10 +89,11 @@ const HomePage = () => {
 
     try {
       const response: AxiosResponse<Invoice> = await axios.post(
-        "https://backside-71fi.onrender.com/invoices",
-        { description, amount, price },
+        "http://localhost:1337/invoices",
+        { description, amount, price, userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       setInvoices([...invoices, response.data]);
       setDescription("");
       setAmount(0);
@@ -101,7 +113,7 @@ const HomePage = () => {
     }
 
     try {
-      await axios.delete(`https://backside-71fi.onrender.com/invoices/${_id}`, {
+      await axios.delete(`http://localhost:1337/invoices/${_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const updatedInvoices = invoices.filter((invoice) => invoice._id !== _id);
@@ -122,7 +134,7 @@ const HomePage = () => {
 
     try {
       const response: AxiosResponse<Invoice> = await axios.patch(
-        `https://backside-71fi.onrender.com/invoices/${_id}`,
+        `http://localhost:1337/invoices/${_id}`,
         newData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -153,7 +165,7 @@ const HomePage = () => {
     }
 
     try {
-      await axios.delete(`https://backside-71fi.onrender.com/user/${userId}`, {
+      await axios.delete(`http://localhost:1337/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       localStorage.removeItem("token");
@@ -174,8 +186,8 @@ const HomePage = () => {
     }
 
     try {
-      const response: AxiosResponse<Users> = await axios.patch(
-        `https://backside-71fi.onrender.com/user/${userId}`,
+      const response: AxiosResponse<User> = await axios.patch(
+        `http://localhost:1337/user/${userId}`,
         { email: newEmail },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -184,24 +196,35 @@ const HomePage = () => {
       setShow(false);
       setNewEmail("");
     } catch (error) {
-      console.log(error);
+      setMessage("Failed to update email");
+      console.error("Failed to update email", error);
     }
   };
 
   const handleLogOut = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setMessage("You must be logged in to log out.");
-      return;
-    } else {
-      localStorage.removeItem("token");
-      router.push("/sign-in");
-    }
+    localStorage.removeItem("token");
+    router.push("/sign-in");
+  };
+
+  const handleFilter = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const newInvoices = invoices.filter((el) => el.price <= filterPrice);
+    setInvoices(newInvoices);
+    setMessage("Filtered Successfully");
+  };
+
+  const handleSort = () => {
+    const sortedInvoices = [...invoices].sort((a, b) =>
+      a.description.localeCompare(b.description)
+    );
+    setInvoices(sortedInvoices);
+    setMessage("Sorted Successfully");
   };
 
   return (
-    <div>
-      <header className="w-full absolute top-0 bg-blue-600 left-0 h-[60px]">
+    <div className="">
+      <header className="bg-gray-800 h-[60px] flex justify-center items-center">
+        <h1 className="text-white font-bold text-2xl">InVoice</h1>
         <div className="cursor-pointer" onClick={() => setShow(!show)}>
           <h3 className="absolute right-[70px] top-[16px] text-white">
             Profile
@@ -209,11 +232,11 @@ const HomePage = () => {
           <img
             className="w-10 h-10 absolute right-6 top-[10px]"
             src="/images/user.png"
-            alt=""
+            alt="User"
           />
         </div>
         {show && (
-          <div className="pt-[10px] pb-[10px] absolute right-0 w-[200px] flex flex-col justify-center gap-[20px] items-center bg-blue-600 top-[60px] rounded-b-[10px]">
+          <div className="pt-[10px] pb-[10px] absolute right-0 w-[200px] flex flex-col justify-center gap-[20px] items-center bg-gray-800 top-[60px] rounded-b-[10px]">
             <h3
               onClick={handleLogOut}
               className="hover:text-red-500 text-white cursor-pointer"
@@ -245,9 +268,28 @@ const HomePage = () => {
           </div>
         )}
       </header>
-      <div className="w-full h-full mt-[60px]" onClick={() => setShow(false)}>
+
+      <div className="mt-4 mb-4" onClick={() => setShow(false)}>
         <div className="p-6 max-w-md mx-auto border-solid border-gray-800 border-2 rounded-[10px]">
           <h1 className="text-2xl font-bold mb-4">Add Invoice</h1>
+          <div className="border-[2px] border-black border-solid rounded-xl p-2 flex items-center justify-center gap-4">
+            <form onSubmit={handleFilter}>
+              <input
+                type="number"
+                placeholder="Filter By Price"
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setFilterPrice(Number(e.target.value))
+                }
+                className="h-[65px] w-[180px] border rounded-md p-2 outline-sky-700 outline-solid outline-[1px] text-xl"
+              />
+            </form>
+            <button
+              onClick={handleSort}
+              className="transition duration-300 hover:bg-red-400 text-slate-600 font-bold border-dashed border-[1px] border-red-600 rounded-xl p-2 h-[65.33px] w-[180px]"
+            >
+              Sort By Name
+            </button>
+          </div>
           <form onSubmit={handleSubmit} className="flex flex-col space-y-2">
             <h1 className="text-xl font-bold">Description</h1>
             <input
@@ -255,7 +297,7 @@ const HomePage = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Description"
-              className="border rounded-md p-2"
+              className="border rounded-md p-2 outline-sky-700 outline-solid outline-[1px]"
               required
             />
             <h1 className="text-xl font-bold">Amount</h1>
@@ -264,7 +306,7 @@ const HomePage = () => {
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
               placeholder="Amount"
-              className="border rounded-md p-2"
+              className="border rounded-md p-2 outline-sky-700 outline-solid outline-[1px]"
               required
             />
             <h1 className="text-xl font-bold">Price</h1>
@@ -273,12 +315,12 @@ const HomePage = () => {
               value={price}
               onChange={(e) => setPrice(Number(e.target.value))}
               placeholder="Price"
-              className="border rounded-md p-2"
+              className="border rounded-md p-2 outline-sky-700 outline-solid outline-[1px]"
               required
             />
             <button
               type="submit"
-              className="bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600 transition duration-300"
+              className="bg-gray-800 text-white rounded-md py-2 px-4 hover:bg-blue-600 transition duration-300"
             >
               Add Invoice
             </button>
