@@ -25,7 +25,7 @@ const HomePage = () => {
   const [price, setPrice] = useState<number>(0);
   const [message, setMessage] = useState<string>("");
   const router = useRouter();
-  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
+  const [editingInvoice, setEditingInvoice] = useState<string | null>(null);
   const [editingEmail, setEditingEmail] = useState(false);
   const [show, setShow] = useState(false);
   const [newEmail, setNewEmail] = useState<string>("");
@@ -143,7 +143,7 @@ const HomePage = () => {
       );
       setInvoices(updatedInvoices);
       setMessage("Invoice updated successfully");
-      setEditingInvoiceId(null);
+      setEditingInvoice(null);
       setDescription("");
       setAmount(0);
       setPrice(0);
@@ -154,7 +154,7 @@ const HomePage = () => {
   };
 
   const toggleEditInvoice = (_id: string) => {
-    setEditingInvoiceId(editingInvoiceId === _id ? null : _id);
+    setEditingInvoice(editingInvoice === _id ? null : _id);
   };
 
   const handleDeleteAcc = async () => {
@@ -330,7 +330,7 @@ const HomePage = () => {
           <ul className="mt-2 space-y-2">
             {invoices.map((invoice) => (
               <li key={invoice._id} className="border p-4 rounded-md">
-                {editingInvoiceId === invoice._id ? (
+                {editingInvoice === invoice._id ? (
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -338,6 +338,7 @@ const HomePage = () => {
                     }}
                     className="flex space-x-2 flex-col gap-4 justify-center items-center"
                   >
+                    <h1 className="text-l">Description:</h1>
                     <input
                       type="text"
                       value={description}
@@ -346,6 +347,7 @@ const HomePage = () => {
                       className="border rounded-md p-2 ml-2"
                       required
                     />
+                    <h1 className="text-l">Amount:</h1>
                     <input
                       type="number"
                       value={amount}
@@ -354,6 +356,7 @@ const HomePage = () => {
                       className="border rounded-md p-2 m-0"
                       required
                     />
+                    <h1 className="text-l">Price:</h1>
                     <input
                       type="number"
                       value={price}
@@ -362,12 +365,21 @@ const HomePage = () => {
                       className="border rounded-md p-2"
                       required
                     />
-                    <button
-                      type="submit"
-                      className="bg-green-500 text-white rounded-md py-1 px-2 hover:bg-green-600 transition duration-300"
-                    >
-                      Save
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        className="w-[70px] bg-green-500 text-white rounded-md py-1 px-2 hover:bg-green-600 transition duration-300"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => toggleEditInvoice("")}
+                        type="submit"
+                        className="w-[70px] bg-red-500 text-white rounded-md py-1 px-2 hover:bg-red-600 transition duration-300"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </form>
                 ) : (
                   <div className="flex justify-between items-center">
