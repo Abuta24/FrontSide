@@ -14,10 +14,13 @@ const LoginPage = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:1337/auth/sign-in", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "https://backside-9xpi.onrender.com/auth/sign-in",
+        {
+          email,
+          password,
+        }
+      );
       setMessage("Welcome!");
       localStorage.setItem("token", response.data.accessToken);
       router.push("/home");

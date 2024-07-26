@@ -44,7 +44,7 @@ const HomePage = () => {
   const fetchUserData = async (token: string | null) => {
     try {
       const response = await axios.get(
-        "http://localhost:1337/user/currentuser",
+        "https://backside-9xpi.onrender.com/user/currentuser",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -59,7 +59,7 @@ const HomePage = () => {
   const fetchInvoices = async (token: string | null, userId: string) => {
     try {
       const response: AxiosResponse<{ invoices: Invoice[] }> = await axios.get(
-        `http://localhost:1337/user/${userId}`,
+        `https://backside-9xpi.onrender.com/user/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -89,7 +89,7 @@ const HomePage = () => {
 
     try {
       const response: AxiosResponse<Invoice> = await axios.post(
-        "http://localhost:1337/invoices",
+        "https://backside-9xpi.onrender.com/invoices",
         { description, amount, price, userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -113,7 +113,7 @@ const HomePage = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:1337/invoices/${_id}`, {
+      await axios.delete(`https://backside-9xpi.onrender.com/invoices/${_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const updatedInvoices = invoices.filter((invoice) => invoice._id !== _id);
@@ -134,7 +134,7 @@ const HomePage = () => {
 
     try {
       const response: AxiosResponse<Invoice> = await axios.patch(
-        `http://localhost:1337/invoices/${_id}`,
+        `https://backside-9xpi.onrender.com/invoices/${_id}`,
         newData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -165,7 +165,7 @@ const HomePage = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:1337/user/${userId}`, {
+      await axios.delete(`https://backside-9xpi.onrender.com/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       localStorage.removeItem("token");
@@ -187,7 +187,7 @@ const HomePage = () => {
 
     try {
       const response: AxiosResponse<User> = await axios.patch(
-        `http://localhost:1337/user/${userId}`,
+        `https://backside-9xpi.onrender.com/user/${userId}`,
         { email: newEmail },
         { headers: { Authorization: `Bearer ${token}` } }
       );
