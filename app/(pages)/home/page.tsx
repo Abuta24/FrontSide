@@ -252,7 +252,7 @@ const HomePage = () => {
             {editingEmail && (
               <form onSubmit={handleEditEmail}>
                 <input
-                  className="w-[196px] outline-white outline-solid outline-[1px] bg-blue-500 rounded text-white h-8 m-0 p-[2px]"
+                  className="w-[196px] outline-white outline-solid outline-[1px] bg-gray-800 rounded text-white h-8 m-0 p-[2px]"
                   type="email"
                   placeholder="example@example.com"
                   onChange={(e) => setNewEmail(e.target.value)}
