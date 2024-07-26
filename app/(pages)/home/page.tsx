@@ -195,8 +195,8 @@ const HomePage = () => {
       setEditingEmail(false);
       setShow(false);
       setNewEmail("");
-      localStorage.removeItem("token");
       router.push("/sign-in");
+      localStorage.removeItem("token");
     } catch (error) {
       setMessage("Failed to update email");
       console.error("Failed to update email", error);
