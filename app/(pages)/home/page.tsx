@@ -20,6 +20,7 @@ interface User {
 const HomePage = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [userId, setUserId] = useState("");
+  const [userEmail, setUserEmail] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [amount, setAmount] = useState<number>(0);
   const [price, setPrice] = useState<number>(0);
@@ -50,9 +51,10 @@ const HomePage = () => {
         }
       );
       setUserId(response.data._id);
+      setUserEmail(response.data.email);
       fetchInvoices(token, response.data._id);
     } catch (error) {
-      console.error("Failed to fetch user data", error);
+      throw error;
     }
   };
 
@@ -71,10 +73,8 @@ const HomePage = () => {
         setInvoices(invoices);
       } else {
         setInvoices([]);
-        console.error("Unexpected response format: ", response.data);
       }
     } catch (error) {
-      console.error("Failed to fetch invoices", error);
       setInvoices([]);
     }
   };
@@ -101,7 +101,6 @@ const HomePage = () => {
       setMessage("Invoice added successfully");
     } catch (error) {
       setMessage("Failed to add invoice");
-      console.error("Failed to add invoice", error);
     }
   };
 
@@ -121,7 +120,6 @@ const HomePage = () => {
       setMessage("Invoice deleted successfully");
     } catch (error) {
       setMessage("Failed to delete invoice");
-      console.error("Failed to delete invoice", error);
     }
   };
 
@@ -149,12 +147,24 @@ const HomePage = () => {
       setPrice(0);
     } catch (error) {
       setMessage("Failed to update invoice");
-      console.error("Failed to update invoice", error);
     }
   };
 
   const toggleEditInvoice = (_id: string) => {
-    setEditingInvoice(editingInvoice === _id ? null : _id);
+    if (editingInvoice === _id) {
+      setEditingInvoice(null);
+      setDescription("");
+      setAmount(0);
+      setPrice(0);
+    } else {
+      const invoiceToEdit = invoices.find((invoice) => invoice._id === _id);
+      if (invoiceToEdit) {
+        setEditingInvoice(_id);
+        setDescription(invoiceToEdit.description);
+        setAmount(invoiceToEdit.amount);
+        setPrice(invoiceToEdit.price);
+      }
+    }
   };
 
   const handleDeleteAcc = async () => {
@@ -173,7 +183,6 @@ const HomePage = () => {
       router.push("/");
     } catch (error) {
       setMessage("Failed to delete account.");
-      console.error("Failed to delete account", error);
     }
   };
 
@@ -195,11 +204,8 @@ const HomePage = () => {
       setEditingEmail(false);
       setShow(false);
       setNewEmail("");
-      router.push("/sign-in");
-      localStorage.removeItem("token");
     } catch (error) {
       setMessage("Failed to update email");
-      console.error("Failed to update email", error);
     }
   };
 
@@ -252,14 +258,18 @@ const HomePage = () => {
               Edit my email
             </h3>
             {editingEmail && (
-              <form onSubmit={handleEditEmail}>
+              <div className="flex flex-col gap-4 justify-center items-center">
                 <input
                   className="w-[196px] outline-white outline-solid outline-[1px] bg-gray-800 rounded text-white h-8 m-0 p-[2px]"
                   type="email"
                   placeholder="example@example.com"
+                  value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                 />
-              </form>
+                <button className="w-[70px] bg-green-500 text-white rounded-md py-1 px-2 hover:bg-green-600 transition duration-300">
+                  Save
+                </button>
+              </div>
             )}
             <h3
               onClick={handleDeleteAcc}
@@ -271,7 +281,12 @@ const HomePage = () => {
         )}
       </header>
 
-      <div className="mt-4 mb-4" onClick={() => setShow(false)}>
+      <div
+        className="mt-4 mb-4"
+        onClick={() => {
+          setShow(false), setEditingEmail(false);
+        }}
+      >
         <div className="p-6 max-w-md mx-auto border-solid border-gray-800 border-2 rounded-[10px]">
           <h1 className="text-2xl font-bold mb-4">Add Invoice</h1>
           <div className="border-[2px] border-black border-solid rounded-xl p-2 flex items-center justify-center gap-4">
@@ -375,7 +390,9 @@ const HomePage = () => {
                         Save
                       </button>
                       <button
-                        onClick={() => toggleEditInvoice("")}
+                        onClick={() => {
+                          toggleEditInvoice(""), setMessage("");
+                        }}
                         type="submit"
                         className="w-[70px] bg-red-500 text-white rounded-md py-1 px-2 hover:bg-red-600 transition duration-300"
                       >

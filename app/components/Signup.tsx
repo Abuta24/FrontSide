@@ -13,17 +13,15 @@ const SignUpPage = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "https://backside-9xpi.onrender.com/auth/sign-up",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await axios.post("http://localhost:1337/auth/sign-up", {
+        email,
+        password,
+      });
       setMessage(`User registered successfully!`);
       router.push("/sign-in");
-    } catch (error) {
-      setMessage("Email And Password Must not be empty");
+    } catch (error: any) {
+      console.log(error.response.data.message[0]);
+      setMessage(error.response.data.message[0]);
     }
   };
 
@@ -43,7 +41,7 @@ const SignUpPage = () => {
           <label>
             Email:
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full h-8 rounded-lg pl-2 bg-gray-500 outline-none"
