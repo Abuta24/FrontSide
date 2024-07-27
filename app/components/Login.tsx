@@ -15,7 +15,7 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://backside-9xpi.onrender.com/auth/sign-in",
+        "https://backside-lx7w.onrender.com/auth/sign-in",
         {
           email,
           password,
