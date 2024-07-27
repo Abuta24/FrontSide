@@ -13,10 +13,13 @@ const SignUpPage = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:1337/auth/sign-up", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "https://backside-9xpi.onrender.com/auth/sign-up",
+        {
+          email,
+          password,
+        }
+      );
       setMessage(`User registered successfully!`);
       router.push("/sign-in");
     } catch (error: any) {
