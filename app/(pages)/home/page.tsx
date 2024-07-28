@@ -85,6 +85,12 @@ const HomePage = () => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (amount <= 0 || price <= 0) {
+      setMessage("Amount and Price must be positive numbers");
+      return;
+    }
+
     const token = localStorage.getItem("token");
     if (!token) {
       setMessage("You must be logged in to add an invoice");
@@ -98,7 +104,7 @@ const HomePage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setInvoices([...invoices, response.data]);
+      setInvoices((prevInvoices) => [...prevInvoices, response.data]);
       setDescription("");
       setAmount(0);
       setPrice(0);
@@ -332,7 +338,7 @@ const HomePage = () => {
             <input
               type="number"
               value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
+              onChange={(e) => setAmount(Math.max(0, Number(e.target.value)))}
               placeholder="Amount"
               className="border rounded-md p-2 outline-sky-700 outline-solid outline-[1px]"
               required
@@ -341,7 +347,7 @@ const HomePage = () => {
             <input
               type="number"
               value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
+              onChange={(e) => setPrice(Math.max(0, Number(e.target.value)))}
               placeholder="Price"
               className="border rounded-md p-2 outline-sky-700 outline-solid outline-[1px]"
               required
@@ -379,7 +385,9 @@ const HomePage = () => {
                     <input
                       type="number"
                       value={amount}
-                      onChange={(e) => setAmount(Number(e.target.value))}
+                      onChange={(e) =>
+                        setAmount(Math.max(0, Number(e.target.value)))
+                      }
                       placeholder="Amount"
                       className="border rounded-md p-2 m-0"
                       required
@@ -388,7 +396,9 @@ const HomePage = () => {
                     <input
                       type="number"
                       value={price}
-                      onChange={(e) => setPrice(Number(e.target.value))}
+                      onChange={(e) =>
+                        setPrice(Math.max(0, Number(e.target.value)))
+                      }
                       placeholder="Price"
                       className="border rounded-md p-2"
                       required
