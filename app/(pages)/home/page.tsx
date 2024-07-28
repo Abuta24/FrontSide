@@ -312,7 +312,7 @@ const HomePage = () => {
                 type="number"
                 placeholder="Filter By Price"
                 onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setFilterPrice(Number(e.target.value))
+                  setFilterPrice(Math.max(0, Number(e.target.value)))
                 }
                 className="h-[65px] w-[180px] border rounded-md p-2 outline-sky-700 outline-solid outline-[1px] text-xl"
               />
