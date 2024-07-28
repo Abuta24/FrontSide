@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import axios, { AxiosResponse } from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
 
 interface Invoice {
@@ -29,7 +31,9 @@ const HomePage = () => {
   const [editingEmail, setEditingEmail] = useState(false);
   const [show, setShow] = useState(false);
   const [newEmail, setNewEmail] = useState<string>("");
+  const [currentEmail, setCurrentEmail] = useState<string>("");
   const [filterPrice, setFilterPrice] = useState<number>(0);
+  const notify = (msg: string) => toast.success(msg);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -51,6 +55,8 @@ const HomePage = () => {
       );
       setUserId(response.data._id);
       fetchInvoices(token, response.data._id);
+      setCurrentEmail(response.data.email);
+      setNewEmail(response.data.email);
     } catch (error) {
       throw error;
     }
@@ -96,7 +102,7 @@ const HomePage = () => {
       setDescription("");
       setAmount(0);
       setPrice(0);
-      setMessage("Invoice added successfully");
+      notify("Invoice Added Successfully");
     } catch (error) {
       setMessage("Failed to add invoice");
     }
@@ -115,7 +121,7 @@ const HomePage = () => {
       });
       const updatedInvoices = invoices.filter((invoice) => invoice._id !== _id);
       setInvoices(updatedInvoices);
-      setMessage("Invoice deleted successfully");
+      notify("Invoice Deleted Successfully");
     } catch (error) {
       setMessage("Failed to delete invoice");
     }
@@ -138,11 +144,11 @@ const HomePage = () => {
         invoice._id === _id ? response.data : invoice
       );
       setInvoices(updatedInvoices);
-      setMessage("Invoice updated successfully");
       setEditingInvoice(null);
       setDescription("");
       setAmount(0);
       setPrice(0);
+      notify("Invoice Updated Successfully");
     } catch (error) {
       setMessage("Failed to update invoice");
     }
@@ -197,10 +203,11 @@ const HomePage = () => {
         { email: newEmail },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setMessage("Account updated successfully");
       setEditingEmail(false);
       setShow(false);
       setNewEmail("");
+      setCurrentEmail(response.data.email); // Update the current email
+      notify("Account Updated Successfully!");
     } catch (error) {
       setMessage("Account With This Email Address Already Exists");
     }
@@ -213,7 +220,7 @@ const HomePage = () => {
 
   const handleFilter = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const newInvoices = invoices.filter((el) => el.price <= filterPrice);
+    const newInvoices = invoices.filter((el) => el.price >= filterPrice);
     setInvoices(newInvoices);
     setMessage("Filtered Successfully");
   };
@@ -263,6 +270,7 @@ const HomePage = () => {
                 <input
                   className="w-[196px] outline-white outline-solid outline-[1px] bg-gray-800 rounded text-white h-8 m-0 p-[2px]"
                   type="email"
+                  value={newEmail}
                   placeholder="example@example.com"
                   onChange={(e) => setNewEmail(e.target.value)}
                 />
@@ -432,6 +440,7 @@ const HomePage = () => {
           </ul>
         </div>
       </div>
+      <ToastContainer position="top-left" />
     </div>
   );
 };
