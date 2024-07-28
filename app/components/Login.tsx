@@ -15,7 +15,7 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://backside-lx7w.onrender.com/auth/sign-in",
+        "https://backside-vcwl.onrender.com/auth/sign-in",
         {
           email,
           password,
@@ -25,7 +25,6 @@ const LoginPage = () => {
       localStorage.setItem("token", response.data.accessToken);
       router.push("/home");
     } catch (error) {
-      console.error("Login failed", error);
       setMessage("Invalid Credentials!");
     }
   };

@@ -44,7 +44,7 @@ const HomePage = () => {
   const fetchUserData = async (token: string | null) => {
     try {
       const response = await axios.get(
-        "https://backside-lx7w.onrender.com/user/currentuser",
+        "https://backside-vcwl.onrender.com/user/currentuser",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -52,14 +52,14 @@ const HomePage = () => {
       setUserId(response.data._id);
       fetchInvoices(token, response.data._id);
     } catch (error) {
-      console.error("Failed to fetch user data", error);
+      throw error;
     }
   };
 
   const fetchInvoices = async (token: string | null, userId: string) => {
     try {
       const response: AxiosResponse<{ invoices: Invoice[] }> = await axios.get(
-        `https://backside-lx7w.onrender.com/user/${userId}`,
+        `https://backside-vcwl.onrender.com/user/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -71,10 +71,8 @@ const HomePage = () => {
         setInvoices(invoices);
       } else {
         setInvoices([]);
-        console.error("Unexpected response format: ", response.data);
       }
     } catch (error) {
-      console.error("Failed to fetch invoices", error);
       setInvoices([]);
     }
   };
@@ -89,7 +87,7 @@ const HomePage = () => {
 
     try {
       const response: AxiosResponse<Invoice> = await axios.post(
-        "https://backside-lx7w.onrender.com/invoices/",
+        "https://backside-vcwl.onrender.com/invoices/",
         { description, amount, price, userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -101,7 +99,6 @@ const HomePage = () => {
       setMessage("Invoice added successfully");
     } catch (error) {
       setMessage("Failed to add invoice");
-      console.error("Failed to add invoice", error);
     }
   };
 
@@ -113,7 +110,7 @@ const HomePage = () => {
     }
 
     try {
-      await axios.delete(`https://backside-lx7w.onrender.com/invoices/${_id}`, {
+      await axios.delete(`https://backside-vcwl.onrender.com/invoices/${_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const updatedInvoices = invoices.filter((invoice) => invoice._id !== _id);
@@ -121,7 +118,6 @@ const HomePage = () => {
       setMessage("Invoice deleted successfully");
     } catch (error) {
       setMessage("Failed to delete invoice");
-      console.error("Failed to delete invoice", error);
     }
   };
 
@@ -134,7 +130,7 @@ const HomePage = () => {
 
     try {
       const response: AxiosResponse<Invoice> = await axios.patch(
-        `https://backside-lx7w.onrender.com/invoices/${_id}`,
+        `https://backside-vcwl.onrender.com/invoices/${_id}`,
         newData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -149,10 +145,8 @@ const HomePage = () => {
       setPrice(0);
     } catch (error) {
       setMessage("Failed to update invoice");
-      console.error("Failed to update invoice", error);
     }
   };
-
   const toggleEditInvoice = (_id: string) => {
     if (editingInvoice === _id) {
       setEditingInvoice(null);
@@ -178,7 +172,7 @@ const HomePage = () => {
     }
 
     try {
-      await axios.delete(`https://backside-lx7w.onrender.com/user/${userId}`, {
+      await axios.delete(`https://backside-vcwl.onrender.com/user/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       localStorage.removeItem("token");
@@ -186,11 +180,11 @@ const HomePage = () => {
       router.push("/");
     } catch (error) {
       setMessage("Failed to delete account.");
-      console.error("Failed to delete account", error);
     }
   };
 
-  const handleEditEmail = async () => {
+  const handleEditEmail = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     const token = localStorage.getItem("token");
     if (!token) {
       setMessage("You must be logged in to edit your email.");
@@ -199,7 +193,7 @@ const HomePage = () => {
 
     try {
       const response: AxiosResponse<User> = await axios.patch(
-        `https://backside-lx7w.onrender.com/user/${userId}`,
+        `https://backside-vcwl.onrender.com/user/${userId}`,
         { email: newEmail },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -208,8 +202,7 @@ const HomePage = () => {
       setShow(false);
       setNewEmail("");
     } catch (error) {
-      setMessage("Failed to update email");
-      console.error("Failed to update email", error);
+      setMessage("Account With This Email Address Already Exists");
     }
   };
 
@@ -263,7 +256,10 @@ const HomePage = () => {
               Edit my email
             </h3>
             {editingEmail && (
-              <div className="flex flex-col justify-center items-center gap-2">
+              <form
+                onSubmit={handleEditEmail}
+                className="flex flex-col justify-center items-center gap-2"
+              >
                 <input
                   className="w-[196px] outline-white outline-solid outline-[1px] bg-gray-800 rounded text-white h-8 m-0 p-[2px]"
                   type="email"
@@ -272,11 +268,11 @@ const HomePage = () => {
                 />
                 <button
                   className="w-[70px] bg-green-500 text-white rounded-md py-1 px-2 hover:bg-green-600 transition duration-300"
-                  onClick={handleEditEmail}
+                  type="submit"
                 >
                   Save
                 </button>
-              </div>
+              </form>
             )}
             <h3
               onClick={handleDeleteAcc}
@@ -288,7 +284,12 @@ const HomePage = () => {
         )}
       </header>
 
-      <div className="mt-4 mb-4" onClick={() => setShow(false)}>
+      <div
+        className="mt-4 mb-4"
+        onClick={() => {
+          setShow(false), setEditingEmail(false);
+        }}
+      >
         <div className="p-6 max-w-md mx-auto border-solid border-gray-800 border-2 rounded-[10px]">
           <h1 className="text-2xl font-bold mb-4">Add Invoice</h1>
           <div className="border-[2px] border-black border-solid rounded-xl p-2 flex items-center justify-center gap-4">
@@ -392,7 +393,7 @@ const HomePage = () => {
                         Save
                       </button>
                       <button
-                        onClick={() => toggleEditInvoice("")}
+                        onClick={() => toggleEditInvoice(invoice._id)}
                         type="button"
                         className="w-[70px] bg-red-500 text-white rounded-md py-1 px-2 hover:bg-red-600 transition duration-300"
                       >

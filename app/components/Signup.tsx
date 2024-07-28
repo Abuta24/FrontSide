@@ -14,7 +14,7 @@ const SignUpPage = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://backside-lx7w.onrender.com/auth/sign-up",
+        "https://backside-vcwl.onrender.com/auth/sign-up",
         {
           email,
           password,
@@ -23,7 +23,6 @@ const SignUpPage = () => {
       setMessage(`User registered successfully!`);
       router.push("/sign-in");
     } catch (error: any) {
-      console.log(error.response.data.message[0]);
       setMessage(error.response.data.message[0]);
     }
   };
